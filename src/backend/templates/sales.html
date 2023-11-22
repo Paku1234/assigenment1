@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Home</title>
+</head>
+<body>
+  <!-- Include the NavBar component -->
+  <div id="navbar"></div>
+
+  <!-- Your home page content -->
+  <h1>Welcome to the Home Page</h1>
+
+  <!-- Include the JavaScript file for the home page -->
+  <script src="{{ url_for('static', filename='SalesPage.js') }}"></script>
+
+  <!-- Render the NavBar component -->
+  <script>
+    ReactDOM.render(
+      React.createElement(NavBar),
+      document.getElementById('navbar')
+    );
+  </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+.sales-page {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f0f0f0;
+  }
+  
+  .sales-page h1 {
+    color: #333;
+    font-size: 2em;
+  }
+  
+  .sales-page h2 {
+    color: #666;
+    font-size: 1.5em;
+  }
+  
+  .filters {
+    margin-bottom: 20px;
+  }
+  
+  .filters label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .filters select {
+    width: 100%;
+    padding: 5px;
+    font-size: 1em;
+  }
+  
