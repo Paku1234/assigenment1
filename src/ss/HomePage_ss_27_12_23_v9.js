@@ -7,10 +7,6 @@ import { Line } from 'react-chartjs-2';
 import EmployeeOverview from 'D:/multi-page-app_Copy/src/data/EmployeeOverview.csv';
 import UserCuisine from 'D:/multi-page-app_Copy/src/data/usercuisine.csv';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
-import wordsToNumbers from 'words-to-numbers';
-import { SpeechConfig, SpeechRecognizer, SpeechTranslationConfig } from 'microsoft-cognitiveservices-speech-sdk';
-import { franc } from 'franc-min';
-
 
 const options = {
  responsive: true,
@@ -41,33 +37,13 @@ function HomePage() {
  const [messages, setMessages] = useState([]);
  const [input, setInput] = useState('');
  const [showChat, setShowChat] = useState(false);
- const [ratings, setRatings] = useState([]);
- 
- const speechConfig = SpeechConfig.fromSubscription(
-  "14025f7d81ba4ced903ad3daadb80f59",
-  "eastus"
-);
-
-const translationConfig = SpeechTranslationConfig.fromSubscription(
-  "14025f7d81ba4ced903ad3daadb80f59",
-  "eastus"
-);
-translationConfig.speechRecognitionLanguage = 'hi-IN';
-translationConfig.addTargetLanguage('en');
-
-const recognizer = new SpeechRecognizer(speechConfig);
-const translator = new SpeechRecognizer(translationConfig);
-
+ const averageHygiene = 85;
+ const averageFoodTaste = 90;
+ const service = 92;
 
  function parseQuestion(question) {
   return question.replace(/[^\w\s]/gi, '').toLowerCase();
  }
-
- function isHindi(text) {
-  const detectedLanguage = franc(text);
-  return detectedLanguage === 'hin';
-}
-
 
  useEffect(() => {
    axios.get('http://localhost:5000/count')
@@ -142,7 +118,7 @@ useEffect(() => {
       return;
     }
 
-    if (parsedQuestion.includes("satisfaction") && storedOverallData.employeeOverview) {
+    if (parsedQuestion.includes("average satisfaction level") && storedOverallData.employeeOverview) {
       const botMessage = `The average satisfaction level is ${storedOverallData.employeeOverview.averageSatisfactionLevel}%.`;
       setMessages(prevMessages => [...prevMessages, { role: 'user', text: transcript }, { role: 'bot', text: botMessage }]);
       setInput('');
@@ -150,7 +126,7 @@ useEffect(() => {
       return;
     }
 
-    if (parsedQuestion.includes("hours worked") && storedOverallData.employeeOverview) {
+    if (parsedQuestion.includes("average hours worked") && storedOverallData.employeeOverview) {
       const botMessage = `The average hours worked is ${storedOverallData.employeeOverview.averageHoursWorked}%.`;
       setMessages(prevMessages => [...prevMessages, { role: 'user', text: transcript }, { role: 'bot', text: botMessage }]);
       setInput('');
@@ -158,11 +134,11 @@ useEffect(() => {
       return;
     }
 
-    if (parsedQuestion.includes("performance") && storedOverallData.employeeOverview) {
+    if (parsedQuestion.includes("average performance") && storedOverallData.employeeOverview) {
       const botMessage = `The average performance is ${storedOverallData.employeeOverview.averagePerformance}%.`;
       setMessages(prevMessages => [...prevMessages, { role: 'user', text: transcript }, { role: 'bot', text: botMessage }]);
       setInput('');
-      speak(botMessage, { language: isHindi(transcript) ? 'hi-IN' : 'en-US' });
+      speak(botMessage); // Speak out the bot message
       return;
     }
 
@@ -365,30 +341,7 @@ console.log(storedOverallData.isHoliday);
 console.log(storedOverallData.weeklySales);
 console.log(storedOverallData.mostOrderedCuisine);
 console.log(storedOverallData.employeeOverview);
-
-
-  const [store, setStore] = useState({
-    foodTaste: 0,
-    hygiene: 0,
-    service: 0
-  });
-
-  const storeData = {
-    store1: { foodTaste: 50.93, hygiene: 51.85, service: 43.52 },
-    store2: { foodTaste: 67.22, hygiene: 50.44, service: 57.78 },
-    store3: { foodTaste: 55.95, hygiene: 58.57, service: 46.43 },
-    store4: { foodTaste: 60.37, hygiene: 50.28, service: 55.65 },
-    store5: { foodTaste: 62.5, hygiene: 43.75, service: 50 }
-  };
-  const maxVal = Math.max(store.hygiene, store.foodTaste, store.service);
-const hygieneSize = (store.hygiene / maxVal) * 120;
-const foodTasteSize = (store.foodTaste / maxVal) * 120;
-const serviceSize = (store.service / maxVal) * 120;
-
-  const handleChange = (event) => {
-    setStore(storeData[event.target.value]);
-  };
-
+ 
 
  return (
   <div className="home-page" style={{display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '10px'}}>
@@ -442,7 +395,7 @@ const serviceSize = (store.service / maxVal) * 120;
 
   <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent:'space-between' }}>
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-    <h3 style={{ marginBottom: '0px', fontSize: '1.2em' }}>Rating</h3>
+      <h3 style={{ marginBottom: '0px', fontSize: '1.2em' }}>Rating</h3>
       <h4 style={{ marginTop: '0px', marginBottom:'20px', fontSize:'1em', color:'#adb5bd'}}>Based on user preferences:</h4>
     </div>
 
@@ -451,86 +404,74 @@ const serviceSize = (store.service / maxVal) * 120;
   
   
   <div style={{ display: 'flex', justifyContent:'space-between', width: '100%' }}>
-    
-    <div style={{ flex:'1', textAlign: 'left' }}>
-      <select name="stores" id="stores" onChange={handleChange}
-                style={{
-                  width:'20%', 
-                  padding:'10px',
-                  fontSize:'0.9em',
-                  marginBottom:'20px'
-                }}>
-                  
-        <option value="">store</option>
-        <option value="store1">Store 1</option>
-        <option value="store2">Store 2</option>
-        <option value="store3">Store 3</option>
-        <option value="store4">Store 4</option>
-        <option value="store5">Store 5</option>
+    <div style={{ flex:'1', textAlign: 'center' }}>
+      <select name="stores" id="stores" 
+              style={{
+                width:'100%', 
+                padding:'10px',
+                fontSize:'0.9em',
+                marginBottom:'20px'
+              }}>
+        <option value="store">Store</option>
       </select>
-      <div style={{ display: 'flex', flexDirection: 'row', justifyContent:'space-between', width: '100%' }}>
 
-        <div style={{ flex:'1', textAlign: 'center' }}>
-    <div style={{
+      <div style={{
           backgroundColor:'#6c63ff',
           borderRadius:'50%',
-          width:`${hygieneSize}px`,
-          height:`${hygieneSize}px`,
+          width:'80px',
+          height:'80px',
           display:'flex',
           justifyContent:'center',
           alignItems:'center',
-          margin: '10px auto'
+          margin: '20px auto'
         }}>
         <p style={{
             color:'#fff',
             fontSize:"1em"
-        }}>{store.hygiene}%</p>
+        }}>85%</p>
       </div>
       <p>Hygiene</p>
-  </div>
+    </div>
 
-  <div style={{ flex:'1', textAlign: 'center' }}>
-    <div style={{
+    <div style={{ flex:'1', textAlign: 'center' }}>
+      <div style={{
           backgroundColor:'#ff9f43',
           borderRadius:"50%",
-          width:`${foodTasteSize}px`,
-          height:`${foodTasteSize}px`,
+          width:"100px",
+          height:"100px",
           display:"flex",
           justifyContent:"center",
           alignItems:"center",
-          margin: '10px auto'
+          margin: '20px auto'
        }}>
          <p style={{
              color:"#fff",
-             fontSize:"1em"
-         }}>{store.foodTaste}%</p>
+             fontSize:"1.2em"
+         }}>85%</p>
        </div>
        <p>Food Taste</p>
-  </div>
+    </div>
 
-  <div style={{ flex:'1', textAlign: 'center' }}>
-    <div style={{
+    <div style={{ flex:'1', textAlign: 'center' }}>
+      <div style={{
           backgroundColor:'#2ecc71',
           borderRadius:"50%",
-          width:`${serviceSize}px`,
-          height:`${serviceSize}px`,
+          width:"120px",
+          height:"120px",
           display:"flex",
           justifyContent:"center",
           alignItems:"center",
-          margin: '10px auto'
+          margin: '20px auto'
        }}>
          <p style={{
              color:"#fff",
-             fontSize:"1em"
-         }}>{store.service}%</p>
+             fontSize:"1.4em"
+         }}>92%</p>
        </div>
        <p>Service</p>
-       </div>
-       </div>
-          
-      </div>
     </div>
-    </div>
+  </div>
+</div>
 
 </div>
 
@@ -570,16 +511,16 @@ const serviceSize = (store.service / maxVal) * 120;
  
     <div style={{ gridColumn: 'span 2', textAlign: 'left', padding: '20px'}}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ marginBottom: '0px', fontSize: '1.1em' }}>Employee Overview</h3>
+        <h3 style={{ marginBottom: '10px', fontSize: '1.2em' }}>Employee Overview</h3>
         <button style={{ fontSize: '0.8em',color:'black',background:'#adb5bd', padding: '10px' }}>View Report</button>
       </div>
-      <h4 style={{ marginBottom: '17px', fontSize: '1em', color: 'grey' }}>Average values for all Stores</h4>
+      <h4 style={{ marginBottom: '20px', fontSize: '1em', color: 'grey' }}>Average values for all Stores</h4>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ flex: '1', textAlign: 'center', margin: '10px' }}>
           <div style={{ backgroundColor: 'darkviolet', borderRadius: '50%', width: '60px', height: '60px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px', marginBottom: '10px' }}>
             <p style={{ fontSize: '0.8em', color: 'white' }}>{Math.round(averageSatisfactionLevel)}%</p>
           </div>
-          <p style={{ textAlign: 'left',color: '#666', marginTop: '10px', fontSize: '0.8em',padding:"5px" }}>Employee Satisfaction</p>
+          <p style={{ textAlign: 'left',color: '#666', marginTop: '10px', fontSize: '0.8em' }}>Employee Satisfaction</p>
           
         </div>
  
@@ -587,14 +528,14 @@ const serviceSize = (store.service / maxVal) * 120;
           <div style={{ backgroundColor: 'violet', borderRadius: '50%', width: '60px', height: '60px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px', marginBottom: '10px' }}>
           <p style={{ fontSize: '0.8em', color: 'white' }}>{Math.round(averageHoursWorked)}%</p>
          </div>
-         <p style={{ textAlign: 'left',color: '#666', marginTop: '10px', fontSize: '0.8em',padding:"5px" }}>Average Hours Worked</p>
+         <p style={{ textAlign: 'left',color: '#666', marginTop: '10px', fontSize: '0.8em' }}>Average Hours Worked</p>
        </div>
  
        <div style={{ flex: '1', textAlign: 'center', margin: '10px' }}>
          <div style={{ backgroundColor: 'blueviolet', borderRadius: '50%', width: '60px', height: '60px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px', marginBottom: '10px' }}>
            <p style={{ fontSize: '0.8em', color: 'white' }}>{Math.round(averagePerformance)}%</p>
          </div>
-         <p style={{ textAlign: 'left',color: '#666', marginTop: '10px', fontSize: '0.8em',padding:"5px" }}>Employee Performance</p>
+         <p style={{ textAlign: 'left',color: '#666', marginTop: '10px', fontSize: '0.8em' }}>Employee Performance</p>
          
        </div>
      </div>

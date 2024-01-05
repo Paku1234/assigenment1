@@ -4,20 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Landing Page</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
   <!-- Include the NavBar component -->
   <div id="navbar"></div>
 
-  <div class="container">
-    <h1>Welcome to the Landing Page!</h1>
-    <p>Explore our interactive voice-controlled dashboard.</p>
-    <div class="buttons">
-      <button class="btn">Homepage</button>
-      <button class="btn">Salespage</button>
-    </div>
-  </div>
+  <h1>Welcome to the Landing Page!</h1>
 
   <!-- Include the JavaScript file for the landing page -->
   <script src="{{ url_for('static', filename='LandingPage.js') }}"></script>

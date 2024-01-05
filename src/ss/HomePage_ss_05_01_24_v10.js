@@ -8,8 +8,6 @@ import EmployeeOverview from 'D:/multi-page-app_Copy/src/data/EmployeeOverview.c
 import UserCuisine from 'D:/multi-page-app_Copy/src/data/usercuisine.csv';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import wordsToNumbers from 'words-to-numbers';
-import { SpeechConfig, SpeechRecognizer, SpeechTranslationConfig } from 'microsoft-cognitiveservices-speech-sdk';
-import { franc } from 'franc-min';
 
 
 const options = {
@@ -42,32 +40,11 @@ function HomePage() {
  const [input, setInput] = useState('');
  const [showChat, setShowChat] = useState(false);
  const [ratings, setRatings] = useState([]);
- 
- const speechConfig = SpeechConfig.fromSubscription(
-  "14025f7d81ba4ced903ad3daadb80f59",
-  "eastus"
-);
-
-const translationConfig = SpeechTranslationConfig.fromSubscription(
-  "14025f7d81ba4ced903ad3daadb80f59",
-  "eastus"
-);
-translationConfig.speechRecognitionLanguage = 'hi-IN';
-translationConfig.addTargetLanguage('en');
-
-const recognizer = new SpeechRecognizer(speechConfig);
-const translator = new SpeechRecognizer(translationConfig);
 
 
  function parseQuestion(question) {
   return question.replace(/[^\w\s]/gi, '').toLowerCase();
  }
-
- function isHindi(text) {
-  const detectedLanguage = franc(text);
-  return detectedLanguage === 'hin';
-}
-
 
  useEffect(() => {
    axios.get('http://localhost:5000/count')
@@ -162,7 +139,7 @@ useEffect(() => {
       const botMessage = `The average performance is ${storedOverallData.employeeOverview.averagePerformance}%.`;
       setMessages(prevMessages => [...prevMessages, { role: 'user', text: transcript }, { role: 'bot', text: botMessage }]);
       setInput('');
-      speak(botMessage, { language: isHindi(transcript) ? 'hi-IN' : 'en-US' });
+      speak(botMessage); // Speak out the bot message
       return;
     }
 

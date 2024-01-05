@@ -7,10 +7,6 @@ import { Line } from 'react-chartjs-2';
 import EmployeeOverview from 'D:/multi-page-app_Copy/src/data/EmployeeOverview.csv';
 import UserCuisine from 'D:/multi-page-app_Copy/src/data/usercuisine.csv';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
-import wordsToNumbers from 'words-to-numbers';
-import { SpeechConfig, SpeechRecognizer, SpeechTranslationConfig } from 'microsoft-cognitiveservices-speech-sdk';
-import { franc } from 'franc-min';
-
 
 const options = {
  responsive: true,
@@ -41,33 +37,10 @@ function HomePage() {
  const [messages, setMessages] = useState([]);
  const [input, setInput] = useState('');
  const [showChat, setShowChat] = useState(false);
- const [ratings, setRatings] = useState([]);
  
- const speechConfig = SpeechConfig.fromSubscription(
-  "14025f7d81ba4ced903ad3daadb80f59",
-  "eastus"
-);
-
-const translationConfig = SpeechTranslationConfig.fromSubscription(
-  "14025f7d81ba4ced903ad3daadb80f59",
-  "eastus"
-);
-translationConfig.speechRecognitionLanguage = 'hi-IN';
-translationConfig.addTargetLanguage('en');
-
-const recognizer = new SpeechRecognizer(speechConfig);
-const translator = new SpeechRecognizer(translationConfig);
-
-
  function parseQuestion(question) {
   return question.replace(/[^\w\s]/gi, '').toLowerCase();
  }
-
- function isHindi(text) {
-  const detectedLanguage = franc(text);
-  return detectedLanguage === 'hin';
-}
-
 
  useEffect(() => {
    axios.get('http://localhost:5000/count')
@@ -142,7 +115,7 @@ useEffect(() => {
       return;
     }
 
-    if (parsedQuestion.includes("satisfaction") && storedOverallData.employeeOverview) {
+    if (parsedQuestion.includes("average satisfaction level") && storedOverallData.employeeOverview) {
       const botMessage = `The average satisfaction level is ${storedOverallData.employeeOverview.averageSatisfactionLevel}%.`;
       setMessages(prevMessages => [...prevMessages, { role: 'user', text: transcript }, { role: 'bot', text: botMessage }]);
       setInput('');
@@ -150,7 +123,7 @@ useEffect(() => {
       return;
     }
 
-    if (parsedQuestion.includes("hours worked") && storedOverallData.employeeOverview) {
+    if (parsedQuestion.includes("average hours worked") && storedOverallData.employeeOverview) {
       const botMessage = `The average hours worked is ${storedOverallData.employeeOverview.averageHoursWorked}%.`;
       setMessages(prevMessages => [...prevMessages, { role: 'user', text: transcript }, { role: 'bot', text: botMessage }]);
       setInput('');
@@ -158,11 +131,11 @@ useEffect(() => {
       return;
     }
 
-    if (parsedQuestion.includes("performance") && storedOverallData.employeeOverview) {
+    if (parsedQuestion.includes("average performance") && storedOverallData.employeeOverview) {
       const botMessage = `The average performance is ${storedOverallData.employeeOverview.averagePerformance}%.`;
       setMessages(prevMessages => [...prevMessages, { role: 'user', text: transcript }, { role: 'bot', text: botMessage }]);
       setInput('');
-      speak(botMessage, { language: isHindi(transcript) ? 'hi-IN' : 'en-US' });
+      speak(botMessage); // Speak out the bot message
       return;
     }
 
@@ -365,35 +338,12 @@ console.log(storedOverallData.isHoliday);
 console.log(storedOverallData.weeklySales);
 console.log(storedOverallData.mostOrderedCuisine);
 console.log(storedOverallData.employeeOverview);
-
-
-  const [store, setStore] = useState({
-    foodTaste: 0,
-    hygiene: 0,
-    service: 0
-  });
-
-  const storeData = {
-    store1: { foodTaste: 50.93, hygiene: 51.85, service: 43.52 },
-    store2: { foodTaste: 67.22, hygiene: 50.44, service: 57.78 },
-    store3: { foodTaste: 55.95, hygiene: 58.57, service: 46.43 },
-    store4: { foodTaste: 60.37, hygiene: 50.28, service: 55.65 },
-    store5: { foodTaste: 62.5, hygiene: 43.75, service: 50 }
-  };
-  const maxVal = Math.max(store.hygiene, store.foodTaste, store.service);
-const hygieneSize = (store.hygiene / maxVal) * 120;
-const foodTasteSize = (store.foodTaste / maxVal) * 120;
-const serviceSize = (store.service / maxVal) * 120;
-
-  const handleChange = (event) => {
-    setStore(storeData[event.target.value]);
-  };
-
+ 
 
  return (
   <div className="home-page" style={{display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '10px'}}>
     <div style={{ gridRow: '1',gridColumn: 'span 2', padding: '10px' }}>
-      <h2 style={{fontSize: '1.9em', marginBottom : '30px'}}>DashBoard</h2>
+      <h2 style={{fontSize: '1.9em', marginBottom : '40px'}}>DashBoard</h2>
  
       <div className="filters" style={{display: 'flex', justifyContent: 'space-between', marginBottom : '35.7px', paddingBottom: '10px'}}>
         <select
@@ -422,117 +372,23 @@ const serviceSize = (store.service / maxVal) * 120;
           min="2010-01-01"
           max="2012-12-31"
           onChange={(e) => setSelectedDate(e.target.value)}
-          style={{height: '28px', marginTop: '7px', padding: '0'}}
         />
  
-        <button style={{background:'d8e2dc',marginBottom:"12px",height:"28px"}} onClick={handleFilterSubmit}>Submit</button>
+        <button style={{background:'d8e2dc'}} onClick={handleFilterSubmit}>Submit</button>
         
       </div>
  
       <div style={{borderBottom: '1px solid grey',borderBottomleftRadius:'20px' ,paddingBottom: '10px'}}>
         {isHoliday ? (
-           <p style={{color:'red'}}>The Restaurant Department Is On <strong>Holiday</strong>.</p>
+          <p style={{color:'#666'}}>The restaurant department is on holiday.</p>
         ) : (
-          <p style={{color:'green'}}>The Restaurant Department Is <strong> Open For Business</strong>.</p>
+          <p style={{color:'#666'}}>The restaurant department is not on holiday.</p>
         )}
-        <p style={{color:'#8d99ae'}}><strong>Weekly Sales: {weeklySales}</strong></p>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', paddingRight: '5px' }}>
-  <div style={{ borderRight: '1px solid grey', position: 'absolute', right: '-20px', height: '100%' }}></div>
-
-  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent:'space-between' }}>
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-    <h3 style={{ marginBottom: '0px', fontSize: '1.2em' }}>Rating</h3>
-      <h4 style={{ marginTop: '0px', marginBottom:'20px', fontSize:'1em', color:'#adb5bd'}}>Based on user preferences:</h4>
-    </div>
-
-    <p style={{ fontSize:'1.2em'}}>Satisfaction Rate 2.568</p>
-  </div>
-  
-  
-  <div style={{ display: 'flex', justifyContent:'space-between', width: '100%' }}>
-    
-    <div style={{ flex:'1', textAlign: 'left' }}>
-      <select name="stores" id="stores" onChange={handleChange}
-                style={{
-                  width:'20%', 
-                  padding:'10px',
-                  fontSize:'0.9em',
-                  marginBottom:'20px'
-                }}>
-                  
-        <option value="">store</option>
-        <option value="store1">Store 1</option>
-        <option value="store2">Store 2</option>
-        <option value="store3">Store 3</option>
-        <option value="store4">Store 4</option>
-        <option value="store5">Store 5</option>
-      </select>
-      <div style={{ display: 'flex', flexDirection: 'row', justifyContent:'space-between', width: '100%' }}>
-
-        <div style={{ flex:'1', textAlign: 'center' }}>
-    <div style={{
-          backgroundColor:'#6c63ff',
-          borderRadius:'50%',
-          width:`${hygieneSize}px`,
-          height:`${hygieneSize}px`,
-          display:'flex',
-          justifyContent:'center',
-          alignItems:'center',
-          margin: '10px auto'
-        }}>
-        <p style={{
-            color:'#fff',
-            fontSize:"1em"
-        }}>{store.hygiene}%</p>
+        <p style={{color:'#666'}}>Weekly Sales: {weeklySales}</p>
       </div>
-      <p>Hygiene</p>
-  </div>
-
-  <div style={{ flex:'1', textAlign: 'center' }}>
-    <div style={{
-          backgroundColor:'#ff9f43',
-          borderRadius:"50%",
-          width:`${foodTasteSize}px`,
-          height:`${foodTasteSize}px`,
-          display:"flex",
-          justifyContent:"center",
-          alignItems:"center",
-          margin: '10px auto'
-       }}>
-         <p style={{
-             color:"#fff",
-             fontSize:"1em"
-         }}>{store.foodTaste}%</p>
-       </div>
-       <p>Food Taste</p>
-  </div>
-
-  <div style={{ flex:'1', textAlign: 'center' }}>
-    <div style={{
-          backgroundColor:'#2ecc71',
-          borderRadius:"50%",
-          width:`${serviceSize}px`,
-          height:`${serviceSize}px`,
-          display:"flex",
-          justifyContent:"center",
-          alignItems:"center",
-          margin: '10px auto'
-       }}>
-         <p style={{
-             color:"#fff",
-             fontSize:"1em"
-         }}>{store.service}%</p>
-       </div>
-       <p>Service</p>
-       </div>
-       </div>
-          
-      </div>
-    </div>
-    </div>
-
-</div>
+      
+ 
+ </div>
 
  <div style={{ gridColumn: 'span 2', textAlign: 'left', padding: '20px', borderRight: '1px solid grey' }}>
  {salesData !== null ? (
@@ -570,16 +426,16 @@ const serviceSize = (store.service / maxVal) * 120;
  
     <div style={{ gridColumn: 'span 2', textAlign: 'left', padding: '20px'}}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ marginBottom: '0px', fontSize: '1.1em' }}>Employee Overview</h3>
+        <h3 style={{ marginBottom: '10px', fontSize: '1.2em' }}>Employee Overview</h3>
         <button style={{ fontSize: '0.8em',color:'black',background:'#adb5bd', padding: '10px' }}>View Report</button>
       </div>
-      <h4 style={{ marginBottom: '17px', fontSize: '1em', color: 'grey' }}>Average values for all Stores</h4>
+      <h4 style={{ marginBottom: '20px', fontSize: '1em', color: 'grey' }}>Average values for all Stores</h4>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ flex: '1', textAlign: 'center', margin: '10px' }}>
           <div style={{ backgroundColor: 'darkviolet', borderRadius: '50%', width: '60px', height: '60px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px', marginBottom: '10px' }}>
             <p style={{ fontSize: '0.8em', color: 'white' }}>{Math.round(averageSatisfactionLevel)}%</p>
           </div>
-          <p style={{ textAlign: 'left',color: '#666', marginTop: '10px', fontSize: '0.8em',padding:"5px" }}>Employee Satisfaction</p>
+          <p style={{ textAlign: 'left',color: '#666', marginTop: '10px', fontSize: '0.8em' }}>Employee Satisfaction</p>
           
         </div>
  
@@ -587,18 +443,18 @@ const serviceSize = (store.service / maxVal) * 120;
           <div style={{ backgroundColor: 'violet', borderRadius: '50%', width: '60px', height: '60px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px', marginBottom: '10px' }}>
           <p style={{ fontSize: '0.8em', color: 'white' }}>{Math.round(averageHoursWorked)}%</p>
          </div>
-         <p style={{ textAlign: 'left',color: '#666', marginTop: '10px', fontSize: '0.8em',padding:"5px" }}>Average Hours Worked</p>
+         <p style={{ textAlign: 'left',color: '#666', marginTop: '10px', fontSize: '0.8em' }}>Average Hours Worked</p>
        </div>
  
        <div style={{ flex: '1', textAlign: 'center', margin: '10px' }}>
          <div style={{ backgroundColor: 'blueviolet', borderRadius: '50%', width: '60px', height: '60px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px', marginBottom: '10px' }}>
            <p style={{ fontSize: '0.8em', color: 'white' }}>{Math.round(averagePerformance)}%</p>
          </div>
-         <p style={{ textAlign: 'left',color: '#666', marginTop: '10px', fontSize: '0.8em',padding:"5px" }}>Employee Performance</p>
+         <p style={{ textAlign: 'left',color: '#666', marginTop: '10px', fontSize: '0.8em' }}>Employee Performance</p>
          
        </div>
      </div>
-     <div style={{borderBottom:'1px solid grey',staticborderBottom: '1px grey' }}></div>
+     <div style={{staticborderBottom: '1px grey' }}></div>
    <div>
      
    </div>

@@ -3,6 +3,8 @@ import os
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
+import openai
+
 
 app = Flask(__name__, template_folder='D:/multi-page-app/src/backend/templates')
 CORS(app)  # Enable CORS for all routes
@@ -15,6 +17,10 @@ df['Date'] = pd.to_datetime(df['Date'], format="%d-%m-%Y")
 # Extract the year and quarter
 df['Year'] = df['Date'].dt.year
 df['Quarter'] = df['Date'].dt.quarter
+
+# OPEN_AI_KEY = os.getenv('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')
+
+# openai.api_key = OPEN_AI_KEY
 
 @app.route('/')
 def home():
@@ -97,6 +103,32 @@ def get_sales_data():
     print("Sales_dataResults",result)
 
     return jsonify(result)
+
+@app.route('/modified_sales_data', methods=['POST'])
+def get_modified_sales_data():
+    data = request.get_json()
+    print("Data", data)
+    # Filter data based on selected store, department, and date
+    filtered_df = df[(df['Store'] == np.int64(data['store'])) & 
+                  (df['Department'] == np.int64(data['department']))]
+
+    print("filtered_df",filtered_df)
+    # Convert filtered data to dictionary format
+    result = filtered_df.to_dict('records')
+    print("Sales_dataResults",result)
+
+    return jsonify(result)
+
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+   message = request.json['message']
+   response = openai.Completion.create(
+       engine="text-davinci-002",
+       prompt=message,
+       max_tokens=150
+   )
+   return jsonify(response.choices[0].text.strip())
 
 if __name__ == '__main__':
     app.run(debug=True, port= 5000)
